@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm install)",
+      "Bash(cargo check:*)",
+      "Bash(pnpm tauri build:*)",
+      "Bash(pnpm tauri dev:*)",
+      "Bash(taskkill:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(timeout:*)",
+      "Bash(powershell -Command \"Get-NetTCPConnection -LocalPort 1420 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_OwningProcess -Force -ErrorAction SilentlyContinue }; Start-Sleep -Milliseconds 500; echo ''Port cleared''\")",
+      "Bash(tasklist:*)",
+      "Bash(pnpm exec vue-tsc:*)",
+      "Bash(dir:*)",
+      "Bash(cmd:*)",
+      "Bash(powershell:*)",
+      "Bash(cargo build:*)"
+    ]
+  }
+}

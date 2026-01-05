@@ -12,9 +12,13 @@
   "app": {
     "windows": [
       {
-        "title": "dsminienvswitch",
-        "width": 800,
-        "height": 600
+        "title": "环境配置管理",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 900,
+        "minHeight": 600,
+        "resizable": true,
+        "center": true
       }
     ],
     "security": {
