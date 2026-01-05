@@ -100,3 +100,56 @@ pub async fn select_folder_path() -> Result<Option<String>, String> {
     // using @tauri-apps/plugin-dialog
     Ok(None)
 }
+
+#[tauri::command]
+pub async fn refresh_all_target_file_paths(
+    target_file: String,
+    store: State<'_, ConfigStore>,
+) -> Result<usize, String> {
+    let mut config = store.load().await?;
+    let mut updated_count = 0;
+
+    println!("[DEBUG] 选择的文件: {}", target_file);
+
+    // 直接将所有环境的 targetFilePath 更新为选择的文件路径
+    for env in &mut config.environments {
+        if let Some(old_path) = &env.target_file_path {
+            // 只有当路径不同时才更新
+            if old_path != &target_file {
+                println!("[DEBUG] 环境: {} | 旧路径: {} | 新路径: {}", env.name, old_path, target_file);
+                env.target_file_path = Some(target_file.clone());
+                updated_count += 1;
+            } else {
+                println!("[DEBUG] 环境: {} | 路径未变化: {}", env.name, old_path);
+            }
+        } else {
+            // 如果环境没有设置 targetFilePath，也设置为新路径
+            println!("[DEBUG] 环境: {} | 设置新路径: {}", env.name, target_file);
+            env.target_file_path = Some(target_file.clone());
+            updated_count += 1;
+        }
+    }
+
+    // 同时更新全局的 targetFilePath
+    if let Some(ref old_path) = config.settings.target_file_path {
+        if old_path != &target_file {
+            println!("[DEBUG] 全局路径 | 旧: {} | 新: {}", old_path, target_file);
+            config.settings.target_file_path = Some(target_file.clone());
+            updated_count += 1;
+        }
+    }
+
+    println!("[DEBUG] 总共更新了 {} 个环境", updated_count);
+    println!("[DEBUG] 外部配置路径: {:?}", config.settings.external_config_path);
+
+    // 如果有更新，保存配置
+    if updated_count > 0 {
+        println!("[DEBUG] 开始保存配置...");
+        match store.save(&config).await {
+            Ok(_) => println!("[DEBUG] 配置保存成功"),
+            Err(e) => println!("[DEBUG] 配置保存失败: {}", e),
+        }
+    }
+
+    Ok(updated_count)
+}

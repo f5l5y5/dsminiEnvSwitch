@@ -21,7 +21,7 @@
             <circle cx="5" cy="5" r="4" stroke="currentColor" stroke-width="1.5"/>
             <path d="M3.5 5L4.5 6L6.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          当前环境
+          当前选中
         </span>
       </div>
       <div class="footer-actions">

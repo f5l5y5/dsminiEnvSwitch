@@ -95,6 +95,8 @@ impl ConfigStore {
 
     // 导出配置到外部 JSON 文件
     pub async fn export_to_json(&self, config: &AppConfig, path: &str) -> Result<(), String> {
+        println!("[DEBUG] export_to_json: path = {}", path);
+
         // 确保父目录存在
         if let Some(parent) = Path::new(path).parent() {
             fs::create_dir_all(parent)
@@ -105,9 +107,13 @@ impl ConfigStore {
         let json_content = serde_json::to_string_pretty(config)
             .map_err(|e| format!("序列化失败: {}", e))?;
 
+        println!("[DEBUG] export_to_json: 写入 {} 字节", json_content.len());
+
         // 写入文件
         fs::write(path, json_content)
             .map_err(|e| format!("无法写入文件: {}", e))?;
+
+        println!("[DEBUG] export_to_json: 写入成功");
 
         Ok(())
     }

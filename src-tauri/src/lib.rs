@@ -76,6 +76,7 @@ pub fn run() {
             commands::files::read_file,
             commands::files::select_file_path,
             commands::files::select_folder_path,
+            commands::files::refresh_all_target_file_paths,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

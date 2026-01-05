@@ -5,7 +5,7 @@
     </div>
     <div v-else class="list">
       <EnvironmentItem
-        v-for="env in environments"
+        v-for="env in sortedEnvironments"
         :key="env.id"
         :environment="env"
         :is-current="env.id === currentId"
@@ -21,10 +21,11 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { Environment } from '../../types/config';
 import EnvironmentItem from './EnvironmentItem.vue';
 
-defineProps<{
+const props = defineProps<{
   environments: Environment[];
   currentId?: string;
   appliedId?: string;
@@ -37,6 +38,16 @@ defineEmits<{
   edit: [id: string];
   apply: [id: string];
 }>();
+
+// 已应用的环境排在最前面
+const sortedEnvironments = computed(() => {
+  if (!props.appliedId) {
+    return props.environments;
+  }
+  const applied = props.environments.filter(e => e.id === props.appliedId);
+  const others = props.environments.filter(e => e.id !== props.appliedId);
+  return [...applied, ...others];
+});
 </script>
 
 <style scoped>

@@ -5,13 +5,24 @@
         <div class="header-content">
           <h1>环境列表</h1>
           <p class="subtitle">管理您的配置环境</p>
+          <p v-if="currentAppliedEnvironment" class="applied-env-info">
+            当前应用: {{ currentAppliedEnvironment.name }}
+          </p>
         </div>
-        <button @click="showAddDialog = true" class="btn-primary">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 3.75V14.25M3.75 9H14.25" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          添加环境
-        </button>
+        <div class="header-actions">
+          <button @click="handleRefreshPaths" class="btn-secondary" title="选择 ext.json 文件刷新路径">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13.5 8C13.5 10.4853 11.4853 12.5 9 12.5C6.51472 12.5 4.5 10.4853 4.5 8C4.5 5.51472 6.51472 3.5 9 3.5C10.1256 3.5 11.1557 3.89175 11.9592 4.54081L13.5 3M13.5 3V6H10.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            刷新路径
+          </button>
+          <button @click="showAddDialog = true" class="btn-primary">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 3.75V14.25M3.75 9H14.25" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            添加环境
+          </button>
+        </div>
       </div>
 
       <div class="content">
@@ -74,7 +85,7 @@ import EnvironmentDialog from '../components/environment/EnvironmentDialog.vue';
 import type { Environment } from '../types/config';
 import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
-import { confirm } from '@tauri-apps/plugin-dialog';
+import { confirm, open } from '@tauri-apps/plugin-dialog';
 
 const configStore = useConfigStore();
 const showAddDialog = ref(false);
@@ -85,6 +96,7 @@ const environments = computed(() => configStore.environments);
 const currentEnvironmentId = computed(() => configStore.currentEnvironmentId);
 const currentAppliedEnvironmentId = computed(() => configStore.currentAppliedEnvironmentId);
 const currentEnvironment = computed(() => configStore.currentEnvironment);
+const currentAppliedEnvironment = computed(() => configStore.currentAppliedEnvironment);
 
 let unlistenTraySwitch: (() => void) | null = null;
 
@@ -198,6 +210,40 @@ const handleApply = async (envId: string) => {
     await showErrorNotification(`应用失败: ${error}`);
   }
 };
+
+const handleRefreshPaths = async () => {
+  try {
+    // 打开文件选择对话框
+    const selected = await open({
+      multiple: false,
+      title: '选择 ext.json 文件',
+      filters: [{
+        name: 'JSON',
+        extensions: ['json']
+      }]
+    });
+
+    if (!selected || typeof selected !== 'string') {
+      return; // 用户取消了选择
+    }
+
+    // 调用后端命令刷新所有路径
+    const count = await invoke<number>('refresh_all_target_file_paths', {
+      targetFile: selected
+    });
+
+    // 重新加载配置
+    await configStore.loadConfig();
+
+    if (count > 0) {
+      await showSuccessNotification(`已更新 ${count} 个环境的文件路径`);
+    } else {
+      await showErrorNotification('没有找到需要更新的路径');
+    }
+  } catch (error) {
+    await showErrorNotification(`刷新路径失败: ${error}`);
+  }
+};
 </script>
 
 <style scoped>
@@ -251,6 +297,25 @@ const handleApply = async (envId: string) => {
   color: var(--text-secondary);
 }
 
+.applied-env-info {
+  color: #10b981;
+  font-weight: 600;
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  margin-top: 12px;
+}
+
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
 .btn-primary {
   display: flex;
   align-items: center;
@@ -275,6 +340,34 @@ const handleApply = async (envId: string) => {
 }
 
 .btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all var(--transition-base);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-secondary:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  transform: translateY(-1px);
+}
+
+.btn-secondary:active {
   transform: translateY(0);
 }
 
