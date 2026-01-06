@@ -72,6 +72,7 @@ pub fn run() {
             commands::config::update_environment,
             commands::config::delete_environment,
             commands::config::switch_environment,
+            commands::config::sync_remote_environments,
             commands::files::apply_environment,
             commands::files::read_file,
             commands::files::select_file_path,

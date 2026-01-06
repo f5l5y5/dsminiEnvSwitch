@@ -54,7 +54,16 @@
         <div class="category-icon">💾</div>
         <h3>配置同步</h3>
         <ul>
-          <li><strong>外部同步</strong>：导入配置文件后，所有变更会自动同步到该文件</li>
+          <li><strong>本地同步</strong>：导入配置文件后，所有变更会自动同步到该文件</li>
+          <li><strong>远程同步</strong>：
+            <ul>
+              <li>在设置页面"远程配置同步"中输入远程配置 URL</li>
+              <li>点击"同步"按钮从远程获取环境配置</li>
+              <li>已存在的环境会更新，新环境会自动添加</li>
+              <li>URL 会自动保存，下次可快速再次同步</li>
+              <li>仅同步 environments 配置，不影响其他设置</li>
+            </ul>
+          </li>
           <li><strong>手动备份</strong>：随时可以导出配置文件进行备份</li>
           <li><strong>配置格式</strong>：JSON格式，可用文本编辑器直接编辑</li>
         </ul>
@@ -82,6 +91,7 @@
           <p>💡 <strong>多项目管理</strong>：为常用环境设置不同的 targetFilePath，可同时管理多个项目的配置</p>
           <p>💡 <strong>快速切换</strong>：使用系统托盘右键菜单可以快速切换环境，勾选项表示当前已应用的环境，无需打开主窗口</p>
           <p>💡 <strong>安全备份</strong>：建议启用自动备份功能，防止配置错误导致的问题</p>
+          <p>💡 <strong>远程同步</strong>：使用远程同步功能可以快速获取团队共享的环境配置，保持团队环境一致性</p>
         </div>
       </div>
     </div>

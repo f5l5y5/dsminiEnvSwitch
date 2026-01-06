@@ -15,7 +15,12 @@
       "Bash(dir:*)",
       "Bash(cmd:*)",
       "Bash(powershell:*)",
-      "Bash(cargo build:*)"
+      "Bash(cargo build:*)",
+      "Bash(del \"\\\\?\\\\c:\\\\Users\\\\fuyunlong\\\\Desktop\\\\lvyun\\\\template\\\\dsminiEnvSwitch\\\\nul\")",
+      "Bash(git clean:*)",
+      "Bash(rm:*)",
+      "Bash(pnpm tauri icon:*)",
+      "Bash(curl:*)"
     ]
   }
 }

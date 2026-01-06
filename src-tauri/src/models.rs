@@ -48,6 +48,8 @@ pub struct AppSettings {
     pub external_config_path: Option<String>,  // 外部配置文件路径
     #[serde(default)]
     pub target_file_path: Option<String>,      // 全局默认的替换文件内容路径
+    #[serde(default)]
+    pub remote_config_url: Option<String>,     // 远程配置同步地址（支持http/https）
 }
 
 fn default_close_to_tray() -> bool { true }
@@ -73,6 +75,7 @@ impl Default for AppConfig {
                 show_notifications: true,
                 external_config_path: None,
                 target_file_path: None,
+                remote_config_url: None,
             },
         }
     }

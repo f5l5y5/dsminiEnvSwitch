@@ -18,6 +18,7 @@ export interface AppSettings {
   showNotifications: boolean;            // 是否显示通知
   externalConfigPath?: string;           // 外部配置文件路径
   targetFilePath?: string;               // 全局默认的替换文件内容路径(环境未单独设置时使用此值)
+  remoteConfigUrl?: string;              // 远程配置同步地址（支持http/https）
 }
 
 // 应用配置(完整的持久化数据)

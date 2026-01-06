@@ -78,6 +78,40 @@
 
       <div class="setting-item">
         <div class="setting-label">
+          <h3>远程配置同步</h3>
+          <p>从远程URL同步environments配置，不影响其他设置</p>
+        </div>
+        <div class="setting-control full-width">
+          <div class="path-input-group">
+            <input
+              v-model="remoteConfigUrlInput"
+              type="text"
+              placeholder="https://example.com/config.json"
+              class="path-input"
+            />
+            <button class="btn-browse" @click="syncRemoteConfig">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 1.5V11.5M8 11.5L11 8.5M8 11.5L5 8.5M13.5 11.5V13C13.5 13.8284 12.8284 14.5 12 14.5H4C3.17157 14.5 2.5 13.8284 2.5 13V11.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              同步
+            </button>
+            <button v-if="settings.remoteConfigUrl" class="btn-clear-small" @click="clearRemoteConfigUrl">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+          <div v-if="settings.remoteConfigUrl" class="config-file-path">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M7 2L12 7M7 2L2 7M7 2V12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            {{ settings.remoteConfigUrl }}
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-label">
           <h3>导出/导入配置</h3>
           <p>手动备份或恢复配置文件，导入后将自动同步</p>
         </div>
@@ -119,7 +153,7 @@ import { ref, onMounted } from 'vue';
 import { useConfigStore } from '../stores/config';
 import { invoke } from '@tauri-apps/api/core';
 import { open, save } from '@tauri-apps/plugin-dialog';
-import type { AppSettings } from '../types/config';
+import type { AppSettings, Environment } from '../types/config';
 
 const configStore = useConfigStore();
 
@@ -129,15 +163,18 @@ const settings = ref<AppSettings>({
   showNotifications: true,
   externalConfigPath: undefined,
   targetFilePath: undefined,
+  remoteConfigUrl: undefined,
 });
 
 const targetFilePathInput = ref('');
+const remoteConfigUrlInput = ref('');
 
 onMounted(async () => {
   await configStore.loadConfig();
   if (configStore.settings) {
     settings.value = { ...configStore.settings };
     targetFilePathInput.value = settings.value.targetFilePath || '';
+    remoteConfigUrlInput.value = settings.value.remoteConfigUrl || '';
   }
 });
 
@@ -226,6 +263,42 @@ const updateTargetFilePath = async () => {
 const clearTargetFilePath = async () => {
   settings.value.targetFilePath = undefined;
   targetFilePathInput.value = '';
+  await saveSettings();
+};
+
+const syncRemoteConfig = async () => {
+  const url = remoteConfigUrlInput.value.trim();
+  if (!url) {
+    alert('请输入远程配置URL');
+    return;
+  }
+
+  // 验证URL格式
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    alert('URL必须以http://或https://开头');
+    return;
+  }
+
+  try {
+    const environments = await invoke<Environment[]>('sync_remote_environments', { url });
+    // 先重新加载配置以获取最新的 environments
+    await configStore.loadConfig();
+    // 更新前端 settings 状态（不保存，因为后端已经保存了）
+    settings.value.remoteConfigUrl = url;
+    // 更新前端显示的 settings
+    if (configStore.config) {
+      settings.value = { ...configStore.config.settings };
+      remoteConfigUrlInput.value = settings.value.remoteConfigUrl || '';
+    }
+    alert(`同步成功！\n已获取 ${environments.length} 个环境配置`);
+  } catch (error) {
+    alert('同步失败：' + error);
+  }
+};
+
+const clearRemoteConfigUrl = async () => {
+  settings.value.remoteConfigUrl = undefined;
+  remoteConfigUrlInput.value = '';
   await saveSettings();
 };
 </script>
